@@ -1,0 +1,94 @@
+
+Install wildcard certificate on Cisco ISR (1/2) Service Router issued by AlphaSSL CA Authority
+
+1. Go through normal step of buying an SSL certificate. One option whould be:
+https://www.ssl2buy.com/alphassl-wildcard.php 
+
+2. Create on Linux machine a certificate request (CSR) that will be entered in AlphaSSL's certificate request wizard: 
+
+## normal openssl certificate request. 
+
+$openssl pkcs12 -export -in received_certificate.cer  -inkey private_key.key -certfile ca_alphassl.pem -out domain.tld.pfx
+
+
+router01$ conf t
+router01# crypto pki trustpoint domain.tld
+ enrollment pkcs12
+ fqdn vpn.domain.tld
+ subject-name cn=*.domain.tld
+ revocation-check crl
+ rsakeypair vpn.domain.tld
+
+[ctrl]+Z 
+router01(config)#^Z
+
+(actual session, trying to import certificate from TFTP server)
+
+router01$ conf t
+router01(config)#crypto pki import domain.tld pkcs12 tftp: pAssw0rd1 
+                                                                       ^
+% Invalid input detected at '^' marker.
+
+##
+## difference between IOS 15.1 and IOS 15.5. On IOS 15.1 wasn't require to specify explicit command switch "password"
+##
+
+router01(config)#crypto pki import domain.tld pkcs12 tftp: ?
+  password  Passphrase
+
+router01(config)#crypto pki import domain.tld pkcs12 tftp: password pAssw0rd1
+% Importing pkcs12...
+Address or name of remote host []? 192.168.0.1
+Source filename [domain.tld]?
+% Error: failed to open file.
+
+router01(config)#crypto pki import domain.tld pkcs12 tftp: password pAssw0rd1
+% Importing pkcs12...
+Address or name of remote host []? 192.168.0.1
+Source filename [domain.tld]? domain.tld.pfx
+Reading file from tftp://192.168.0.1/domain.tld.pfx
+Loading domain.tld.pfx from 192.168.0.1 (via Dialer0): !
+[OK - 4389 bytes]
+
+CRYPTO_PKI: Imported PKCS12 file successfully.
+router01(config)#^Z
+
+## how it looks imported certificate
+router01$ show crypto pki certificates
+Certificate
+  Status: Available
+  Certificate Serial Number (hex): 35E168F5C844FD1EF104AAAAB
+  Certificate Usage: General Purpose
+  Issuer:
+    cn=AlphaSSL CA - SHA256 - G2
+    o=GlobalSign nv-sa
+    c=BE
+  Subject:
+    Name: *.domain.tld
+    cn=*.domain.tld
+    ou=Domain Control Validated
+  CRL Distribution Points:
+    http://crl2.alphassl.com/gs/gsalphasha2g2.crl
+  Validity Date:
+    start date: 16:05:45 GMT Dec 21 2018
+    end   date: 16:05:45 GMT Dec 21 2021
+  Associated Trustpoints: vpn.domain.tld
+CA Certificate
+  Status: Available
+  Certificate Serial Number (hex): 040000000001444FF00031
+  Certificate Usage: Signature
+  Issuer:
+    cn=GlobalSign Root CA
+    ou=Root CA
+    o=GlobalSign nv-sa
+    c=BE
+  Subject:
+    cn=AlphaSSL CA - SHA256 - G2
+    o=GlobalSign nv-sa
+    c=BE
+  CRL Distribution Points:
+    http://crl.globalsign.net/root.crl
+  Validity Date:
+    start date: 12:00:00 GMT Feb 20 2014
+    end   date: 12:00:00 GMT Feb 20 2024
+  Associated Trustpoints: vpn.domain.tld
