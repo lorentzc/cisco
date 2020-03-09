@@ -1,0 +1,29 @@
+
+Setup for high availability.
+
+
+Virtual machines (VMWare Platform) have access to the Internet via an Cisco router.
+In case we lose connectivity on hardware router, second router (virtualised) will take the task.
+
+Protocols that offers redudancy are: HSRP and/or VRRP. First one is proprietary, second one is implemented by multiple vendors.
+Limitation in small networks: to have at least 3 routable IPS offerred by ISP Provider. In practice, the provider is offering only on IP for
+connection with it and other classes are routed throgh that IP.
+
+HSRP requires 3 IPS. Here I've implemented with only one routable IP, setup as secondary.
+Communication between routers and virtual IP are class C, while routable IP (public) is setup as secondary.
+
+This setup is not quite common. This approch should NOT used in any kind of production environment. Take normal approach where any
+normal network consultant / engineer will say: talk to the ISP - solved it with the Business departament.
+By the way, TAC support also says that this approach doesn't enter under any warranty/ approved solution.
+
+What you should watch closely, because I didn't see anywhere documented:
+
+- I've forced an static MAC address of Provider's gateway. Is important from my point of view.
+- Setups that I've seen, they never replace the IP address on the facing interface to the ISP when the backup router became Primary.
+
+TODO:
+
+Complete with all links.
+Correct any typos in readme file
+
+
