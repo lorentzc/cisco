@@ -1,0 +1,241 @@
+
+!
+version 15.7
+service config
+service timestamps debug datetime msec
+service timestamps log datetime msec
+service password-encryption
+!
+hostname XXXXXXXXXXXXXXX
+!
+boot-start-marker
+boot system flash0:c1900-universalk9-mz.SPA.157-3.M2.bin
+boot-end-marker
+!
+!
+enable secret 5 $1$dU9K$AsKKjY57SCCCCCCCXXXX.
+enable password 7 0XXXXXXXXX
+!
+aaa new-model
+!
+!
+aaa authentication login default local enable
+!
+!
+!
+!
+!
+!
+aaa session-id common
+no process cpu extended history
+no process cpu autoprofile hog
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+
+
+!
+ip dhcp excluded-address 192.168.10.1 192.168.10.99
+!
+ip dhcp pool test-phone
+ network 192.168.10.0 255.255.255.0
+ domain-name domain.tld
+ dns-server 8.8.8.8 
+!
+!
+!
+ip cef
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+crypto pki trustpoint TP-self-signed-1401819482
+ enrollment selfsigned
+ subject-name cn=IOS-Self-Signed-Certificate-1401819482
+ revocation-check none
+ rsakeypair TP-self-signed-1401819482
+!
+!
+crypto pki certificate chain TP-self-signed-1401819482
+ certificate self-signed 01
+  3082022B 30820194 A0030201 02020101 300D0609 2A864886 F70D0101 05050030 
+  31312F30 2D060355 04031326 494F532D 53656C66 2D536967 6E65642D 43657274 
+  69666963 6174652D 31343031 38313934 3832301E 170D3137 31313037 31383539 
+  35325A17 0D323030 31303130 305A3031 312F302D 06035504 03132649 
+  4F532D53 656C662D 5369676E 65642D43 65727469 66696361 74652D31 34303138 
+  31393438 3230819F 300D0609 2A864886 F70D0101 01050003 818D0030 81890281 
+  8100A72D A1260597 79C583B8 93E9BE5F D521F7DF FF8ECF2D D98B48F6 5E2D27BE 
+  7CFA86EC 65331A66 40642416 76DF198D 9AA68693 E9E749B0 E3FD3131 3272FEDF 
+  7CC3F227 6813A0D2 34E25871 578EB625 4BDE2589 93A04F64 813C6864 
+  2C8B8B9C 063D80A6 EB8D3FD6 AB8313BB FA634805 FA4C9BA1 79802003 3EEDFA7E 
+  6A610203 010001A3 53305130 0F060355 1D130101 FF040530 030101FF 301F0603 
+  551D2304 18301680 147F2C42 13E1C802 9D88C47B 54E241A0 2D602235 CD301D06 
+  03551D0E 04160414 7F2C4213 E1C8029D E241A02D 602235CD 300D0609 
+  2A864886 F70D0101 05050003 8181005C D3233CE3 7650506F 90A87E03 4D3AEB2D 
+  30CE2CAB 3E3EC503 3C9981DD 8B122064 FD75002E 7522282D 80935C29 DCF8AF74 
+  3226D6BE B44E462B A31AE814 A9B6FFAD 29A94420 F29A5CEE ABAE98B9 73FF6F76 
+  A14F88B7 FE22EBD4 6169D3A2 EE3CF2B7 35E570AD 44EB9D65 8D44C9DF 788AF525 
+  4C23E2FC 397D1DC5 5C52214E 82F84A
+  	quit
+license udi pid CISCO1941/K9 sn FCXXXXXXXXXX
+license accept end user agreement
+license boot module c1900 technology-package datak9
+!
+!
+username XXXXXXXXXX  privilege 15 password 7 020XXXXXXXXXXXXX
+!
+redundancy
+!
+!
+!
+!
+lldp run
+!
+track 100 ip route 192.168.150.2 255.255.255.255 reachability
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Embedded-Service-Engine0/0
+ ip address 192.168.0.200 255.255.255.0
+ no cdp enable
+!
+interface GigabitEthernet0/0
+ ip address 172.17.22.100 255.255.255.0
+ duplex auto
+ speed auto
+ no cdp enable
+!
+interface GigabitEthernet0/0.20
+ encapsulation dot1Q 20
+ ip address 10.10.20.30 255.255.255.0
+!
+interface GigabitEthernet0/0.50
+ description SOME_ISP Link IN 
+ encapsulation dot1Q 50
+ ip address 192.168.250.17 255.255.255.248 secondary
+ ip address 89.XXX.XXX.XXX 255.255.255.248
+ standby version 2
+ standby 5 ip 192.168.250.22
+ standby 5 priority 250
+ standby 5 preempt
+!
+interface GigabitEthernet0/0.100
+ encapsulation dot1Q 100
+ ip address 192.168.250.1 255.255.255.248
+ standby version 2
+ standby 10 ip 192.168.250.3
+ standby 10 ip 89.XX.XX.XXX secondary
+ standby 10 priority 250
+ standby 10 preempt
+!
+interface GigabitEthernet0/1
+ description outside network
+ no ip address
+ duplex auto
+ speed auto
+ no cdp enable
+ no mop enabled
+!
+interface GigabitEthernet0/0/0
+ switchport access vlan 10
+ switchport mode access
+ no ip address
+ no cdp enable
+!
+interface GigabitEthernet0/0/1
+ no ip address
+ shutdown
+ no cdp enable
+!
+interface GigabitEthernet0/0/2
+ no ip address
+ shutdown
+ no cdp enable
+!
+interface GigabitEthernet0/0/3
+ no ip address
+ shutdown
+ no cdp enable
+!
+interface Vlan1
+ no ip address
+ shutdown
+!
+interface Vlan10
+ ip address 192.168.10.1 255.255.255.0
+!
+ip forward-protocol nd
+!
+no ip http server
+no ip http secure-server
+!
+ip route 0.0.0.0 0.0.0.0 89.XXX.XXXX.XXX
+ip route 89.XXX.XXX.XXX 255.255.255.252 GigabitEthernet0/0.50
+ip route 89.XXX.XXX.XXX  255.255.255.255 GigabitEthernet0/0.50
+ip ssh maxstartups 10
+ip ssh time-out 15
+ip ssh port XXXX rotary 1
+ip ssh version 2
+ip ssh server algorithm encryption aes256-ctr aes256-cbc
+ip scp server enable
+!
+no service-routing capabilities-manager
+arp 89.XXX.XXX.XXX 0019.XXXX.XXXX ARPA
+ipv6 ioam timestamp
+!
+!
+!
+!
+!
+control-plane
+!
+!
+ vstack
+!
+line con 0
+ exec-timeout 0 0
+line aux 0
+line 2
+ no activation-character
+ no exec
+ transport preferred none
+ transport output pad telnet rlogin lapb-ta mop udptn v120 ssh
+ stopbits 1
+line vty 0 4
+ password 7 121D151XXXXXXXXXXX
+ rotary 1
+ transport input ssh
+line vty 5 10
+ rotary 1
+ transport input ssh
+!
+scheduler allocate 20000 1000
+!
+!
+webvpn gateway TEST
+ ssl trustpoint TP-self-signed-1401819482
+ no inservice
+end

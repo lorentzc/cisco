@@ -1,0 +1,192 @@
+
+!
+! Last configuration change at 13:31:32 UTC Mon Mar 9 2020 by $SOME_USER
+!
+version 15.5
+service timestamps debug datetime msec
+service timestamps log datetime msec
+service password-encryption
+no platform punt-keepalive disable-kernel-core
+platform console auto
+!
+hostname CSR1000v_ESXi
+!
+boot-start-marker
+boot-end-marker
+!
+!
+enable secret 5 $1$OgJC$lk4IC4<>>>>>
+!
+no aaa new-model
+!
+!
+!
+!
+!
+!
+!
+!
+!
+
+
+ip domain name domain.tld
+
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+subscriber templating
+!
+multilink bundle-name authenticated
+!
+!
+crypto pki trustpoint rtr
+ fqdn rtr.domain.tld
+ subject-name cn=rtr.domain.tld
+ revocation-check crl
+!
+!
+crypto pki certificate chain rtr
+license udi pid CSR1000V sn 9IGXXXXXX
+spanning-tree extend system-id
+!
+username $SOME_USER secret 5 $1$YnmZ$1wC1s3V1Bcccccccxxxxxx/
+username $ANOTHER_USER secret 5 $1$RwH1$BR7/Qx32zQSxxxxxxxyb0
+!
+redundancy
+!
+!
+!
+!
+!
+lldp timer 15
+lldp run
+cdp run
+!
+track 100 ip route 192.168.250.1 255.255.255.255 reachability
+!
+ip ssh version 2
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+! 
+! 
+!
+interface GigabitEthernet1
+ description RTR-to-NET
+ no ip address
+ negotiation auto
+!
+interface GigabitEthernet1.1
+ encapsulation dot1Q 1 native
+!
+interface GigabitEthernet1.20
+ description test VLAN 20 T-U
+ encapsulation dot1Q 20
+ ip address 172.17.22.10 255.255.255.0
+!
+interface GigabitEthernet1.30
+!
+interface GigabitEthernet1.50
+ description SOME_ISP PVID 50
+ encapsulation dot1Q 50
+ ip address 192.168.250.18 255.255.255.248
+ standby version 2
+ standby 5 ip 192.168.250.22
+ standby 5 ip 89.XXX.XXX.XXX secondary
+ standby 5 priority 110
+!
+interface GigabitEthernet1.100
+ encapsulation dot1Q 100
+ ip address 192.168.250.2 255.255.255.248
+ standby version 2
+ standby 10 ip 192.168.250.3
+ standby 10 ip 89.XXX.XXX.XXX secondary
+ standby 10 priority 50
+!
+interface GigabitEthernet2
+ no ip address
+ shutdown
+ negotiation auto
+!
+interface GigabitEthernet3
+ ip address 192.168.0.99 255.255.255.0
+ negotiation auto
+!
+!
+virtual-service csr_mgmt
+!
+ip forward-protocol nd
+!
+no ip http server
+ip http secure-server
+ip route 0.0.0.0 0.0.0.0 89.XXX.XXX.XXX
+!!def GW
+ip route 89.XXX.XXX.XXX 255.255.255.248 10.10.20.1
+ip route 89.XXX.XXX.XXX 255.255.255.252 GigabitEthernet1.50
+ip route 192.168.20.0 255.255.255.0 192.168.0.253
+!
+arp 89.XXX.XXX.XXX 0019.07XX.XXXX ARPA
+!
+!
+!
+control-plane
+!
+banner exec 
+You are connected to line $(line) at router $(hostname) 
+
+!
+line con 0
+ stopbits 1
+line vty 0
+ login local
+ transport input ssh
+line vty 1
+ login local
+ length 0
+ transport input ssh
+line vty 2 4
+ login local
+ transport input ssh
+line vty 5 98
+ login local
+ transport input ssh
+!
+event manager environment quote "
+event manager applet hsrp-watch
+ event syslog pattern "HSRP-5-STATECHANGE: GigabitEthernet1.50 Grp 5 state Standby -> Active"
+ action 001 cli command "enable"
+ action 002 cli command "config t"
+ action 003 cli command "int GigabitEthernet1.50"
+ action 004 cli command "no standby 5 ip 89.XXX.XXX.XXX secondary"
+ action 005 cli command "ip address 89.XXX.XXX.XXX 255.255.255.252"
+ action 006 cli command "ip address 192.168.250.18 255.255.255.248 secondary"
+ action 007 cli command "end"
+event manager applet hsrp-watch-recover
+ event syslog pattern "HSRP-5-STATECHANGE: GigabitEthernet1.50 Grp 5 state Speak -> Standby"
+ action 010 cli command "enable"
+ action 011 cli command "config t"
+ action 012 cli command "int GigabitEthernet1.50"
+ action 013 cli command "no ip address 192.168.250.18 255.255.255.248 secondary"
+ action 014 cli command "no ip address 89.XXX.XXX.XXX 255.255.255.252"
+ action 015 cli command "ip address 192.168.250.18 255.255.255.248"
+ action 016 cli command "standby 5 ip 89.XXX.XXX.XXX secondary"
+ action 017 cli command "end"
+!
+end
